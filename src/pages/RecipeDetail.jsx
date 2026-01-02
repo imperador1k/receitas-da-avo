@@ -101,46 +101,51 @@ const RecipeDetail = () => {
     /**
      * handleLike - Processa o clique no botão de like (TOGGLE)
      * 
-     * Se já deu like, remove o like (unlike).
-     * Se não deu like, adiciona o like.
-     * Atualiza o localStorage para manter o estado.
+     * Usa "Optimistic UI" - atualiza visualmente de imediato
+     * e sincroniza com o servidor em background.
+     * Se houver erro, reverte para o estado anterior.
      */
     const handleLike = async () => {
         // Prevenir duplo clique enquanto processa
         if (isLiking) return;
 
+        // Guardar estado anterior para reverter em caso de erro
+        const previousLiked = liked;
+        const previousLikes = likes;
+
         try {
             setIsLiking(true);
 
             if (liked) {
-                // UNLIKE - Remover o like
-                const newLikes = await unlikeRecipe(id);
+                // UNLIKE - Atualização otimista (instantânea)
+                setLiked(false);
+                setLikes(prev => Math.max(0, prev - 1));
 
-                if (newLikes !== null) {
-                    setLikes(newLikes);
-                    setLiked(false);
+                // Remove do localStorage imediatamente
+                const likedRecipes = JSON.parse(localStorage.getItem('liked_recipes') || '[]');
+                const updatedLikes = likedRecipes.filter(recipeId => recipeId !== parseInt(id));
+                localStorage.setItem('liked_recipes', JSON.stringify(updatedLikes));
 
-                    // Remove do localStorage
-                    const likedRecipes = JSON.parse(localStorage.getItem('liked_recipes') || '[]');
-                    const updatedLikes = likedRecipes.filter(recipeId => recipeId !== parseInt(id));
-                    localStorage.setItem('liked_recipes', JSON.stringify(updatedLikes));
-                }
+                // Sincroniza com o servidor em background
+                await unlikeRecipe(id);
             } else {
-                // LIKE - Adicionar o like
-                const newLikes = await likeRecipe(id);
+                // LIKE - Atualização otimista (instantânea)
+                setLiked(true);
+                setLikes(prev => prev + 1);
 
-                if (newLikes !== null) {
-                    setLikes(newLikes);
-                    setLiked(true);
+                // Guarda no localStorage imediatamente
+                const likedRecipes = JSON.parse(localStorage.getItem('liked_recipes') || '[]');
+                likedRecipes.push(parseInt(id));
+                localStorage.setItem('liked_recipes', JSON.stringify(likedRecipes));
 
-                    // Guarda no localStorage
-                    const likedRecipes = JSON.parse(localStorage.getItem('liked_recipes') || '[]');
-                    likedRecipes.push(parseInt(id));
-                    localStorage.setItem('liked_recipes', JSON.stringify(likedRecipes));
-                }
+                // Sincroniza com o servidor em background
+                await likeRecipe(id);
             }
         } catch (error) {
+            // Em caso de erro, reverte para o estado anterior
             console.error('Erro ao processar like:', error);
+            setLiked(previousLiked);
+            setLikes(previousLikes);
         } finally {
             setIsLiking(false);
         }
