@@ -13,10 +13,18 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getRecipes } from '../services/api';
 import RecipeCard from '../components/RecipeCard';
 
 const Home = () => {
+    // ============================================
+    // HOOKS
+    // ============================================
+
+    // useLocation para detetar navegação de volta para esta página
+    const location = useLocation();
+
     // ============================================
     // ESTADO (useState)
     // ============================================
@@ -41,13 +49,13 @@ const Home = () => {
     // ============================================
 
     /**
-     * useEffect que corre quando o componente é montado.
-     * Chama a função para carregar as receitas da API.
-     * O array vazio [] significa que só corre uma vez (na montagem).
+     * useEffect que corre quando o componente é montado OU quando
+     * o pathname muda (utilizador navega para esta página).
+     * Isto garante que os likes são sempre atualizados ao voltar.
      */
     useEffect(() => {
         loadRecipes();
-    }, []);
+    }, [location.pathname]);
 
     /**
      * useEffect que corre sempre que o termo de pesquisa muda.
