@@ -212,6 +212,35 @@ export const likeRecipe = async (id) => {
     }
 };
 
+/**
+ * Decrementa o like de uma receita (unlike)
+ * Obtém a receita atual, decrementa o like, e faz PUT
+ */
+export const unlikeRecipe = async (id) => {
+    try {
+        // Primeiro, obter os likes atuais
+        const receitaRes = await api.get(`/receitas/${id}`);
+        const receita = receitaRes.data.receita;
+
+        if (!receita) return null;
+
+        // Não deixa ir abaixo de 0
+        const newLikes = Math.max(0, (receita.likes || 0) - 1);
+
+        // Atualizar apenas os likes
+        await api.put(`/receitas/${id}`, {
+            receita: {
+                likes: newLikes,
+            },
+        });
+
+        return newLikes;
+    } catch (error) {
+        console.error('Erro ao tirar like:', error);
+        throw error;
+    }
+};
+
 // ============================================
 // API - AUTENTICAÇÃO (Local - não usa Sheety)
 // ============================================

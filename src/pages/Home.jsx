@@ -50,12 +50,13 @@ const Home = () => {
 
     /**
      * useEffect que corre quando o componente é montado OU quando
-     * o pathname muda (utilizador navega para esta página).
-     * Isto garante que os likes são sempre atualizados ao voltar.
+     * o location.key muda (utilizador navega para esta página).
+     * O key muda em cada navegação, garantindo que os dados são
+     * sempre recarregados ao voltar de outra página.
      */
     useEffect(() => {
         loadRecipes();
-    }, [location.pathname]);
+    }, [location.key]);
 
     /**
      * useEffect que corre sempre que o termo de pesquisa muda.

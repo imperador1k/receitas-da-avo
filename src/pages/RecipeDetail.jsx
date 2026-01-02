@@ -16,7 +16,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRecipeById, likeRecipe } from '../services/api';
+import { getRecipeById, likeRecipe, unlikeRecipe } from '../services/api';
 
 const RecipeDetail = () => {
     // ============================================
@@ -99,35 +99,48 @@ const RecipeDetail = () => {
     };
 
     /**
-     * handleLike - Processa o clique no botão de like
+     * handleLike - Processa o clique no botão de like (TOGGLE)
      * 
-     * 1. Verifica se já está a processar ou se já deu like
-     * 2. Chama a API para incrementar o like
-     * 3. Atualiza o contador local
-     * 4. Guarda no localStorage para não permitir dar like novamente
+     * Se já deu like, remove o like (unlike).
+     * Se não deu like, adiciona o like.
+     * Atualiza o localStorage para manter o estado.
      */
     const handleLike = async () => {
-        // Prevenir duplo clique ou like repetido
-        if (isLiking || liked) return;
+        // Prevenir duplo clique enquanto processa
+        if (isLiking) return;
 
         try {
             setIsLiking(true);
 
-            // Chama a API para incrementar o like
-            const newLikes = await likeRecipe(id);
+            if (liked) {
+                // UNLIKE - Remover o like
+                const newLikes = await unlikeRecipe(id);
 
-            if (newLikes !== null) {
-                // Atualiza o contador visualmente
-                setLikes(newLikes);
-                setLiked(true);
+                if (newLikes !== null) {
+                    setLikes(newLikes);
+                    setLiked(false);
 
-                // Guarda no localStorage que o utilizador já deu like
-                const likedRecipes = JSON.parse(localStorage.getItem('liked_recipes') || '[]');
-                likedRecipes.push(parseInt(id));
-                localStorage.setItem('liked_recipes', JSON.stringify(likedRecipes));
+                    // Remove do localStorage
+                    const likedRecipes = JSON.parse(localStorage.getItem('liked_recipes') || '[]');
+                    const updatedLikes = likedRecipes.filter(recipeId => recipeId !== parseInt(id));
+                    localStorage.setItem('liked_recipes', JSON.stringify(updatedLikes));
+                }
+            } else {
+                // LIKE - Adicionar o like
+                const newLikes = await likeRecipe(id);
+
+                if (newLikes !== null) {
+                    setLikes(newLikes);
+                    setLiked(true);
+
+                    // Guarda no localStorage
+                    const likedRecipes = JSON.parse(localStorage.getItem('liked_recipes') || '[]');
+                    likedRecipes.push(parseInt(id));
+                    localStorage.setItem('liked_recipes', JSON.stringify(likedRecipes));
+                }
             }
         } catch (error) {
-            console.error('Erro ao dar like:', error);
+            console.error('Erro ao processar like:', error);
         } finally {
             setIsLiking(false);
         }
@@ -205,11 +218,11 @@ const RecipeDetail = () => {
                                 {recipe.tempo_preparo}
                             </span>
 
-                            {/* Botão de Like */}
+                            {/* Botão de Like - agora funciona como toggle */}
                             <button
                                 className={`like-button ${liked ? 'liked' : ''}`}
                                 onClick={handleLike}
-                                disabled={isLiking || liked}
+                                disabled={isLiking}
                             >
                                 <i className={`bi ${liked ? 'bi-heart-fill' : 'bi-heart'} me-2`}></i>
                                 <span>{likes}</span>
