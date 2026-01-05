@@ -50,12 +50,12 @@ const Home = () => {
 
     /**
      * useEffect que corre quando o componente é montado OU quando
-     * o pathname muda (utilizador navega para esta página).
+     * o utilizador navega para esta página (location.key muda em cada navegação).
      * Isto garante que os likes são sempre atualizados ao voltar.
      */
     useEffect(() => {
         loadRecipes();
-    }, [location.pathname]);
+    }, [location.key]);
 
     /**
      * useEffect que corre sempre que o termo de pesquisa muda.
@@ -128,25 +128,35 @@ const Home = () => {
         <div className="home-page">
             {/* ========== HERO SECTION ========== */}
             {/* Secção de destaque com título e barra de pesquisa */}
-            <section className="hero-section text-center py-5">
+            <section className="hero-section">
                 <div className="container">
-                    <h1 className="display-4 fw-bold mb-3">
-                        <i className="bi bi-book-half text-sage me-3"></i>
+                    {/* Decoração superior */}
+                    <div className="hero-decoration">
+                        <span className="decoration-line"></span>
+                        <span className="decoration-icon">🍲</span>
+                        <span className="decoration-line"></span>
+                    </div>
+
+                    {/* Título principal */}
+                    <h1 className="hero-title">
                         Receitas da Avó
                     </h1>
-                    <p className="lead text-muted mb-4">
-                        Descubra receitas tradicionais passadas de geração em geração
+
+                    {/* Subtítulo com destaque */}
+                    <p className="hero-subtitle">
+                        Descubra as receitas <span className="highlight">tradicionais</span> passadas
+                        de geração em geração
                     </p>
 
                     {/* Barra de Pesquisa */}
                     <div className="row justify-content-center">
-                        <div className="col-md-6 col-lg-5">
+                        <div className="col-md-8 col-lg-6">
                             <div className="search-wrapper">
                                 <i className="bi bi-search search-icon"></i>
                                 <input
                                     type="text"
                                     className="form-control search-input"
-                                    placeholder="Pesquisar receitas..."
+                                    placeholder="O que vai cozinhar hoje?"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -161,6 +171,14 @@ const Home = () => {
                                 )}
                             </div>
                         </div>
+                    </div>
+
+                    {/* Tags de categorias populares */}
+                    <div className="hero-tags">
+                        <span className="hero-tag" onClick={() => setSearchTerm('Galinha')}>🐔 Galinha</span>
+                        <span className="hero-tag" onClick={() => setSearchTerm('Sopa')}>🥣 Sopa</span>
+                        <span className="hero-tag" onClick={() => setSearchTerm('Dourada')}>🐟 Dourada</span>
+                        <span className="hero-tag" onClick={() => setSearchTerm('Pato')}>🦆 Pato</span>
                     </div>
                 </div>
             </section>

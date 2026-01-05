@@ -13,7 +13,7 @@ import axios from 'axios';
 // ============================================
 // CONFIGURAÇÃO
 // ============================================
-const BASE_URL = 'https://api.sheety.co/231b2b4d7d020f5d98082048ef3ae23a/bd';
+const BASE_URL = 'https://api.sheety.co/925ccd8fdf2e086ba38e9f6e1ec6ac44/bd';
 
 // Instância axios configurada
 const api = axios.create({

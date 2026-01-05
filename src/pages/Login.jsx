@@ -208,13 +208,7 @@ const Login = () => {
                                 </button>
                             </form>
 
-                            {/* ========== DICA DE CREDENCIAIS ========== */}
-                            <div className="text-center mt-4">
-                                <small className="text-muted">
-                                    <i className="bi bi-info-circle me-1"></i>
-                                    Dica: admin / admin
-                                </small>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>

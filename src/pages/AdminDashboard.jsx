@@ -220,19 +220,26 @@ const AdminDashboard = () => {
         try {
             if (editingRecipe) {
                 // UPDATE - Atualizar receita existente
-                await updateRecipe(editingRecipe.id, formData);
+                const updatedRecipe = await updateRecipe(editingRecipe.id, formData);
+
+                // Optimistic UI: Atualiza o estado local imediatamente
+                setRecipes(prev => prev.map(r =>
+                    r.id === editingRecipe.id ? updatedRecipe : r
+                ));
             } else {
                 // CREATE - Criar nova receita
-                await createRecipe(formData);
-            }
+                const newRecipe = await createRecipe(formData);
 
-            // Recarrega a lista de receitas
-            await loadData();
+                // Optimistic UI: Adiciona a nova receita ao estado local
+                setRecipes(prev => [...prev, newRecipe]);
+            }
 
             // Fecha a modal
             closeModal();
         } catch (error) {
             console.error('Erro ao guardar receita:', error);
+            // Em caso de erro, recarrega para garantir consistência
+            await loadData();
         } finally {
             setSaving(false);
         }
@@ -241,25 +248,26 @@ const AdminDashboard = () => {
     /**
      * handleDelete - Processa a eliminação de uma receita
      * 
-     * 1. Verifica se há receita para eliminar
-     * 2. Chama a API de eliminação
-     * 3. Recarrega os dados e fecha a modal
+     * Usa "Optimistic UI" - remove do estado local imediatamente
+     * sem esperar pela propagação da API (Sheety é lenta)
      */
     const handleDelete = async () => {
         if (!deletingRecipe) return;
 
         setSaving(true);
         try {
-            // DELETE - Eliminar a receita
+            // DELETE - Eliminar a receita na API
             await deleteRecipe(deletingRecipe.id);
 
-            // Recarrega a lista
-            await loadData();
+            // Optimistic UI: Remove do estado local imediatamente
+            setRecipes(prev => prev.filter(r => r.id !== deletingRecipe.id));
 
             // Fecha a modal de confirmação
             closeDeleteModal();
         } catch (error) {
             console.error('Erro ao eliminar receita:', error);
+            // Em caso de erro, recarrega para garantir consistência
+            await loadData();
         } finally {
             setSaving(false);
         }
@@ -292,7 +300,7 @@ const AdminDashboard = () => {
                             <i className="bi bi-grid-3x3-gap text-sage me-2"></i>
                             Dashboard
                         </h1>
-                        <p className="text-muted mb-0">Gerir receitas do livro de receitas</p>
+                        <p className="text-muted mb-0">Gerir as receitas do livro de receitas</p>
                     </div>
                     {/* Botão para abrir modal de adicionar */}
                     <button className="btn btn-sage" onClick={openAddModal}>
